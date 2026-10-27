@@ -125,7 +125,7 @@ export default function Dropzone({ onFilesSelected, isProcessing, progress }) {
           title="Try out the parser instantly with pre-packaged resumes"
         >
           <Sparkles size={16} />
-          Load 5 Sample Resumes
+          Load Sample Resumes
         </button>
       </div>
     </div>

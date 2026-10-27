@@ -632,10 +632,13 @@ body {
 }
 
 .file-cell {
+  max-width: 240px;
+}
+
+.file-cell-wrapper {
   display: flex;
   align-items: center;
   gap: 8px;
-  max-width: 220px;
 }
 
 .file-badge {
@@ -646,6 +649,42 @@ body {
   padding: 2px 6px;
   border-radius: 4px;
   color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.btn-file-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  color: #818cf8;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.18s ease;
+  max-width: 180px;
+  text-align: left;
+}
+
+.btn-file-open:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: #818cf8;
+  color: #c7d2fe;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.25);
+}
+
+.btn-file-open:hover .file-external-icon {
+  transform: translate(1px, -1px);
+  opacity: 1;
+}
+
+.file-external-icon {
+  flex-shrink: 0;
+  opacity: 0.75;
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
 .file-name-text {
@@ -653,7 +692,6 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 0.82rem;
-  color: var(--text-muted);
 }
 
 /* Badges */
@@ -1274,5 +1312,163 @@ body {
   .btn-action {
     flex: 1;
     justify-content: center;
+  }
+}
+
+/* ============================================================
+   Clean Styling & Enhanced Responsiveness
+   ============================================================ */
+
+.badge-subtle {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+.stat-icon-wrapper.warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.stat-card.active-stat {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.12);
+}
+
+.footer-stats {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.footer-filter-tag {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #818cf8;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* Responsive Table Container */
+.table-scroll-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+
+.candidate-table {
+  width: 100%;
+  min-width: 820px;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 960px) {
+  .table-toolbar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .search-group {
+    flex: 1 1 240px;
+  }
+
+  .filter-group {
+    flex: 1 1 200px;
+  }
+
+  .select-filter {
+    width: 100%;
+  }
+
+  .table-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-layout {
+    padding: 12px 10px 48px;
+  }
+
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .brand-titles h1 {
+    font-size: 1.25rem;
+  }
+
+  .header-meta {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .meta-badge {
+    font-size: 0.72rem;
+    padding: 4px 10px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .stat-icon-wrapper {
+    width: 36px;
+    height: 36px;
+  }
+
+  .stat-value {
+    font-size: 1.15rem;
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+  }
+
+  .dropzone {
+    padding: 28px 16px;
+  }
+
+  .dropzone-title {
+    font-size: 1.05rem;
+  }
+
+  .upload-actions {
+    flex-direction: column;
+  }
+
+  .upload-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .table-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .btn-action {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .table-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 }

@@ -107,6 +107,21 @@ Python, PyTorch, Hugging Face, spaCy, Docker, Kubernetes, AWS SageMaker
 
 EDUCATION
 M.Tech in Artificial Intelligence | Indian Institute of Science (IISc)`
+  },
+  {
+    fileName: 'Marcus_Vance_UX_Designer.txt',
+    content: `MARCUS VANCE
+Austin, Texas
+Email: marcus.vance.ux@designcraft.io
+Portfolio: https://marcusux.design
+
+PROFILE
+Lead UX/UI Product Designer specializing in design systems, user journey mapping, and mobile app interactions.
+(Note: Please contact via email to request direct phone screening).
+
+EXPERIENCE
+Staff Product Designer | FinTech Studio (2021 - Present)
+- Designed design token system adopted across 8 web and mobile products.`
   }
 ];
 

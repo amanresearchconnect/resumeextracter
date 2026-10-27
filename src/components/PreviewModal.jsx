@@ -11,18 +11,23 @@ import {
   Copy,
   Check
 } from 'lucide-react';
+import { openResumeInNewTab } from '../utils/fileViewer';
 
 export default function PreviewModal({ candidate, onClose }) {
   if (!candidate) return null;
 
   const [copied, setCopied] = useState(false);
-  const isPdf = candidate.fileName.toLowerCase().endsWith('.pdf');
+  const isPdf = candidate.fileName?.toLowerCase().endsWith('.pdf');
 
   const handleCopyText = async () => {
     if (!candidate.rawText) return;
     await navigator.clipboard.writeText(candidate.rawText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleOpenInNewTab = () => {
+    openResumeInNewTab(candidate);
   };
 
   return (
@@ -43,29 +48,26 @@ export default function PreviewModal({ candidate, onClose }) {
           </div>
 
           <div className="modal-header-actions">
-            {candidate.fileUrl && (
-              <>
-                <a
-                  href={candidate.fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-modal-action-primary"
-                  title="Open original resume in a new browser tab"
-                >
-                  <ExternalLink size={15} />
-                  <span>Open in New Tab</span>
-                </a>
+            <button
+              type="button"
+              className="btn-modal-action-primary"
+              onClick={handleOpenInNewTab}
+              title="Open resume document in a new browser tab"
+            >
+              <ExternalLink size={15} />
+              <span>Open in New Tab</span>
+            </button>
 
-                <a
-                  href={candidate.fileUrl}
-                  download={candidate.fileName}
-                  className="btn-modal-action"
-                  title="Download copy of this resume file"
-                >
-                  <Download size={15} />
-                  <span>Download</span>
-                </a>
-              </>
+            {candidate.fileUrl && (
+              <a
+                href={candidate.fileUrl}
+                download={candidate.fileName}
+                className="btn-modal-action"
+                title="Download copy of this resume file"
+              >
+                <Download size={15} />
+                <span>Download</span>
+              </a>
             )}
 
             <button className="btn-close" onClick={onClose} aria-label="Close modal">
@@ -77,16 +79,16 @@ export default function PreviewModal({ candidate, onClose }) {
         {/* 4-Field Extracted Summary (Top Banner) */}
         <div className="modal-extracted-summary">
           <div className="summary-field">
-            <span className="summary-label"><User size={13} /> Name</span>
+            <span className="summary-label"><User size={13} /> Name (Compulsory)</span>
             <span className={`summary-value ${!candidate.name ? 'empty' : ''}`}>
-              {candidate.name || 'Not detected'}
+              {candidate.name || '⚠️ Not detected'}
             </span>
           </div>
 
           <div className="summary-field">
-            <span className="summary-label"><Phone size={13} /> Phone</span>
+            <span className="summary-label"><Phone size={13} /> Phone (Compulsory)</span>
             <span className={`summary-value ${!candidate.phone ? 'empty' : ''}`}>
-              {candidate.phone || 'Not detected'}
+              {candidate.phone || '⚠️ Not detected'}
             </span>
           </div>
 
@@ -135,17 +137,14 @@ export default function PreviewModal({ candidate, onClose }) {
 
         {/* Modal Footer */}
         <div className="modal-footer">
-          {candidate.fileUrl && (
-            <a
-              href={candidate.fileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-primary"
-            >
-              <ExternalLink size={15} />
-              Open Original {candidate.fileType} in New Tab
-            </a>
-          )}
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={handleOpenInNewTab}
+          >
+            <ExternalLink size={15} />
+            Open Original {candidate.fileType} in New Tab
+          </button>
           <button className="btn-secondary" onClick={onClose}>Close</button>
         </div>
       </div>

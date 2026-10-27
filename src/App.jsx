@@ -6,9 +6,9 @@ import {
   Phone, 
   MapPin, 
   ShieldCheck, 
-  Sparkles, 
   Zap,
-  CheckCircle2
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import Dropzone from './components/Dropzone';
 import ResumeTable from './components/ResumeTable';
@@ -20,6 +20,7 @@ export default function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('all');
 
   // Handle batch file processing
   const handleFilesSelected = async (files) => {
@@ -63,7 +64,6 @@ export default function App() {
     setCandidates(prev => prev.map(c => {
       if (c.id === id) {
         const updated = { ...c, ...updatedFields };
-        // Recalculate status
         const found = [updated.name, updated.email, updated.phone, updated.location].filter(Boolean).length;
         updated.status = found === 4 ? 'complete' : found >= 2 ? 'partial' : 'low_confidence';
         return updated;
@@ -84,10 +84,11 @@ export default function App() {
 
   // Metric stats
   const totalResumes = candidates.length;
-  const namesCount = candidates.filter(c => Boolean(c.name)).length;
-  const emailsCount = candidates.filter(c => Boolean(c.email)).length;
-  const phonesCount = candidates.filter(c => Boolean(c.phone)).length;
-  const locationsCount = candidates.filter(c => Boolean(c.location)).length;
+  const namesCount = candidates.filter(c => Boolean(c.name && c.name.trim())).length;
+  const emailsCount = candidates.filter(c => Boolean(c.email && c.email.trim())).length;
+  const phonesCount = candidates.filter(c => Boolean(c.phone && c.phone.trim())).length;
+  const locationsCount = candidates.filter(c => Boolean(c.location && c.location.trim())).length;
+  const missingCompulsoryCount = candidates.filter(c => !c.name?.trim() || !c.phone?.trim()).length;
 
   return (
     <div className="app-layout">
@@ -127,13 +128,32 @@ export default function App() {
         {/* Stats Metrics Cards */}
         {candidates.length > 0 && (
           <div className="stats-grid">
-            <div className="stat-card">
+            <div 
+              className={`stat-card ${statusFilter === 'all' ? 'active-stat' : ''}`}
+              onClick={() => setStatusFilter('all')}
+              title="Click to view all resumes"
+            >
               <div className="stat-icon-wrapper total">
                 <Users size={20} />
               </div>
               <div className="stat-content">
                 <span className="stat-value">{totalResumes}</span>
                 <span className="stat-label">Total Resumes</span>
+              </div>
+            </div>
+
+            {/* Clean Missing Name / Phone Stat Card */}
+            <div 
+              className={`stat-card ${statusFilter === 'missing_compulsory' ? 'active-stat' : ''}`}
+              onClick={() => setStatusFilter(prev => prev === 'missing_compulsory' ? 'all' : 'missing_compulsory')}
+              title="Click to filter resumes missing Name or Phone"
+            >
+              <div className="stat-icon-wrapper warning">
+                <AlertCircle size={20} />
+              </div>
+              <div className="stat-content">
+                <span className="stat-value">{missingCompulsoryCount}</span>
+                <span className="stat-label">Missing Name / Phone</span>
               </div>
             </div>
 
@@ -148,22 +168,22 @@ export default function App() {
             </div>
 
             <div className="stat-card">
-              <div className="stat-icon-wrapper emails">
-                <Mail size={20} />
-              </div>
-              <div className="stat-content">
-                <span className="stat-value">{emailsCount} / {totalResumes}</span>
-                <span className="stat-label">Emails Extracted</span>
-              </div>
-            </div>
-
-            <div className="stat-card">
               <div className="stat-icon-wrapper phones">
                 <Phone size={20} />
               </div>
               <div className="stat-content">
                 <span className="stat-value">{phonesCount} / {totalResumes}</span>
                 <span className="stat-label">Phones Extracted</span>
+              </div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-icon-wrapper emails">
+                <Mail size={20} />
+              </div>
+              <div className="stat-content">
+                <span className="stat-value">{emailsCount} / {totalResumes}</span>
+                <span className="stat-label">Emails Extracted</span>
               </div>
             </div>
 
@@ -187,6 +207,8 @@ export default function App() {
             onDeleteCandidate={handleDeleteCandidate}
             onClearAll={handleClearAll}
             onSelectCandidate={setSelectedCandidate}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
           />
         )}
       </main>
