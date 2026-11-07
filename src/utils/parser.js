@@ -248,9 +248,14 @@ export async function extractTextFromTxt(file) {
  */
 export async function extractContent(file) {
   const name = file.name.toLowerCase();
-  if (name.endsWith('.pdf')) {
+  const isImg = name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.webp');
+
+  if (isImg) {
+    return { text: '', html: null, nameFromFont: null, isImageResume: true };
+  } else if (name.endsWith('.pdf')) {
     const result = await extractTextFromPdf(file);
-    return { text: result.text, html: null, nameFromFont: result.nameFromFont };
+    const isScannedPdf = (result.text || '').trim().length < 50;
+    return { text: result.text, html: null, nameFromFont: result.nameFromFont, isScannedPdf };
   } else if (name.endsWith('.docx') || name.endsWith('.doc')) {
     return await extractDocx(file);
   } else {
@@ -535,6 +540,8 @@ export async function parseResume(file) {
   let htmlPreview = null;
   let fileData = null;
   let nameFromFont = null;
+  let isImageResume = false;
+  let isScannedPdf = false;
   let error = null;
 
   try {
@@ -542,6 +549,8 @@ export async function parseResume(file) {
     rawText = normalizeText(content.text || '');
     htmlPreview = content.html;
     nameFromFont = content.nameFromFont;
+    isImageResume = Boolean(content.isImageResume);
+    isScannedPdf = Boolean(content.isScannedPdf);
   } catch (err) {
     console.error(`Error reading ${file.name}:`, err);
     error = err.message || 'Failed to read file contents';
@@ -588,6 +597,8 @@ export async function parseResume(file) {
   let status = 'complete';
   if (error) {
     status = 'error';
+  } else if (isImageResume || isScannedPdf) {
+    status = 'partial'; // Needs AI Vision OCR to extract text from photo/scan
   } else if (foundCount === 4) {
     status = 'complete';
   } else if (foundCount >= 2) {
@@ -605,6 +616,8 @@ export async function parseResume(file) {
     fileData,
     fileUrl,
     htmlPreview,
+    isImageResume,
+    isScannedPdf,
     name: name || '',
     email: email || '',
     phone: phone || '',

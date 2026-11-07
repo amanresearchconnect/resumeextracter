@@ -23,7 +23,9 @@ export default function Dropzone({ onFilesSelected, isProcessing, progress }) {
 
     const files = Array.from(e.dataTransfer.files).filter(file => {
       const ext = file.name.toLowerCase();
-      return ext.endsWith('.pdf') || ext.endsWith('.docx') || ext.endsWith('.doc') || ext.endsWith('.txt');
+      return ext.endsWith('.pdf') || ext.endsWith('.docx') || ext.endsWith('.doc') || 
+             ext.endsWith('.txt') || ext.endsWith('.png') || ext.endsWith('.jpg') || 
+             ext.endsWith('.jpeg') || ext.endsWith('.webp');
     });
 
     if (files.length > 0) {
@@ -59,7 +61,7 @@ export default function Dropzone({ onFilesSelected, isProcessing, progress }) {
           ref={fileInputRef}
           type="file"
           multiple
-          accept=".pdf,.docx,.doc,.txt"
+          accept=".pdf,.docx,.doc,.txt,.png,.jpg,.jpeg,.webp"
           style={{ display: 'none' }}
           onChange={handleFileInputChange}
           disabled={isProcessing}
@@ -79,13 +81,13 @@ export default function Dropzone({ onFilesSelected, isProcessing, progress }) {
           </h3>
 
           <p className="dropzone-subtitle">
-            Upload multiple files at once. Supports <strong>PDF</strong>, <strong>DOCX</strong>, and <strong>TXT</strong>.
+            Upload multiple files at once. Supports <strong>PDF</strong>, <strong>DOCX</strong>, and <strong>Photo/Scanned Resumes (PNG/JPG)</strong>.
           </p>
 
           <div className="file-format-tags">
             <span className="format-tag">.PDF</span>
             <span className="format-tag">.DOCX</span>
-            <span className="format-tag">.TXT</span>
+            <span className="format-tag">.PNG / .JPG</span>
             <span className="privacy-badge">🔒 100% Client-Side & Private</span>
           </div>
         </div>

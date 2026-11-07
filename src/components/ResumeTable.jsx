@@ -12,7 +12,9 @@ import {
   Phone, 
   User, 
   MapPin,
-  ExternalLink
+  ExternalLink,
+  Sparkles,
+  X
 } from 'lucide-react';
 import { exportToExcel, exportToCsv, copyAllEmails, copyAllPhones } from '../utils/exporter';
 import { openResumeInNewTab } from '../utils/fileViewer';
@@ -24,11 +26,56 @@ export default function ResumeTable({
   onClearAll, 
   onSelectCandidate,
   statusFilter,
-  setStatusFilter
+  setStatusFilter,
+  onSingleAiRefine,
+  onBatchAiRefine,
+  isAiProcessing,
+  aiProgress,
+  onOpenAiSettings
 }) {
   const [internalFilter, setInternalFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [copyFeedback, setCopyFeedback] = useState(null);
+
+  // Custom File Name Export Modal State
+  const [exportModal, setExportModal] = useState({
+    isOpen: false,
+    type: 'excel',
+    fileName: ''
+  });
+
+  const handleOpenExport = (type) => {
+    const today = new Date().toISOString().slice(0, 10);
+    setExportModal({
+      isOpen: true,
+      type,
+      fileName: `Candidates_${today}`
+    });
+  };
+
+  const handleConfirmExport = (e) => {
+    e?.preventDefault();
+    if (!exportModal.fileName.trim()) return;
+
+    let cleanName = exportModal.fileName.trim().replace(/[\\/:*?"<>|]/g, '_');
+    const ext = exportModal.type === 'excel' ? '.xlsx' : '.csv';
+
+    // Avoid duplicate extension if user typed it
+    if (cleanName.toLowerCase().endsWith(ext)) {
+      cleanName = cleanName.slice(0, -ext.length);
+    }
+    const fullFileName = `${cleanName}${ext}`;
+
+    if (exportModal.type === 'excel') {
+      exportToExcel(filteredCandidates, fullFileName);
+    } else {
+      exportToCsv(filteredCandidates, fullFileName);
+    }
+
+    setCopyFeedback(`Exported as "${fullFileName}"`);
+    setTimeout(() => setCopyFeedback(null), 3000);
+    setExportModal({ isOpen: false, type: 'excel', fileName: '' });
+  };
 
   const activeFilter = statusFilter !== undefined ? statusFilter : internalFilter;
   const setActiveFilter = setStatusFilter || setInternalFilter;
@@ -113,11 +160,27 @@ export default function ResumeTable({
         </div>
 
         <div className="table-actions">
+          {missingCompulsoryCount > 0 && onBatchAiRefine && (
+            <button 
+              type="button"
+              className="btn-action btn-ai-gradient"
+              onClick={onBatchAiRefine}
+              disabled={isAiProcessing}
+              title={`Send only the ${missingCompulsoryCount} resumes missing Name or Phone to OpenAI gpt-4o-mini`}
+            >
+              <Sparkles size={16} />
+              {isAiProcessing 
+                ? `Refining AI (${aiProgress?.current || 0}/${aiProgress?.total || missingCompulsoryCount})...`
+                : `AI Refine Incomplete (${missingCompulsoryCount})`
+              }
+            </button>
+          )}
+
           <button 
             type="button"
             className="btn-action btn-excel"
-            onClick={() => exportToExcel(filteredCandidates)}
-            title="Download formatted Excel sheet"
+            onClick={() => handleOpenExport('excel')}
+            title="Name and download formatted Excel sheet"
           >
             <FileSpreadsheet size={16} />
             Excel
@@ -126,8 +189,8 @@ export default function ResumeTable({
           <button 
             type="button"
             className="btn-action"
-            onClick={() => exportToCsv(filteredCandidates)}
-            title="Download CSV"
+            onClick={() => handleOpenExport('csv')}
+            title="Name and download CSV file"
           >
             <Download size={16} />
             CSV
@@ -317,23 +380,41 @@ export default function ResumeTable({
 
                     {/* Status Badge */}
                     <td>
-                      {isComplete ? (
-                        <span className="badge badge-success">
-                          <Check size={12} /> Complete
-                        </span>
-                      ) : hasMissingCompulsory ? (
-                        <span className="badge badge-warning">
-                          Incomplete
-                        </span>
-                      ) : (
-                        <span className="badge badge-subtle">
-                          Partial
-                        </span>
-                      )}
+                      <div className="status-badge-container">
+                        {isComplete ? (
+                          <span className="badge badge-success">
+                            <Check size={12} /> Complete
+                          </span>
+                        ) : hasMissingCompulsory ? (
+                          <span className="badge badge-warning">
+                            Incomplete
+                          </span>
+                        ) : (
+                          <span className="badge badge-subtle">
+                            Partial
+                          </span>
+                        )}
+                        {c.aiRefined && (
+                          <span className="badge badge-ai" title="Missing details refined by OpenAI gpt-4o-mini">
+                            <Sparkles size={11} /> AI Refined
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Actions */}
                     <td className="cell-actions">
+                      {hasMissingCompulsory && onSingleAiRefine && (
+                        <button
+                          type="button"
+                          className="btn-icon-action ai-sparkle-btn"
+                          onClick={() => onSingleAiRefine(c)}
+                          title="Extract missing Name/Phone with OpenAI"
+                          disabled={c._isAiRunning || isAiProcessing}
+                        >
+                          <Sparkles size={15} className={c._isAiRunning ? 'spin-icon' : ''} />
+                        </button>
+                      )}
                       <button
                         type="button"
                         className="btn-icon-action"
@@ -385,6 +466,73 @@ export default function ResumeTable({
           Click any resume file to open it in a new tab • Edit cells directly
         </span>
       </div>
+
+      {/* Custom Export File Name Modal */}
+      {exportModal.isOpen && (
+        <div className="modal-backdrop" onClick={() => setExportModal(prev => ({ ...prev, isOpen: false }))}>
+          <div className="modal-card export-name-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title-group">
+                <div className={`export-icon-bubble ${exportModal.type === 'excel' ? 'excel-theme' : 'csv-theme'}`}>
+                  {exportModal.type === 'excel' ? <FileSpreadsheet size={20} /> : <Download size={20} />}
+                </div>
+                <div>
+                  <h3>Name Your {exportModal.type === 'excel' ? 'Excel Spreadsheet' : 'CSV File'}</h3>
+                  <p className="modal-subtitle">Choose a file name before saving ({filteredCandidates.length} candidate records)</p>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                className="btn-close-modal" 
+                onClick={() => setExportModal(prev => ({ ...prev, isOpen: false }))}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleConfirmExport}>
+              <div className="modal-body-content">
+                <div className="form-group">
+                  <label className="form-label">Enter File Name</label>
+                  <div className="export-filename-wrapper">
+                    <input
+                      type="text"
+                      className="modal-text-input export-name-input"
+                      value={exportModal.fileName}
+                      onChange={(e) => setExportModal(prev => ({ ...prev, fileName: e.target.value }))}
+                      placeholder="e.g. FullStack_Candidates"
+                      autoFocus
+                    />
+                    <span className="export-ext-badge">
+                      {exportModal.type === 'excel' ? '.xlsx' : '.csv'}
+                    </span>
+                  </div>
+                  <p className="form-hint">
+                    File will be saved as: <strong>{exportModal.fileName.trim() || 'export'}{exportModal.type === 'excel' ? '.xlsx' : '.csv'}</strong>
+                  </p>
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button 
+                  type="button" 
+                  className="btn-cancel" 
+                  onClick={() => setExportModal(prev => ({ ...prev, isOpen: false }))}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className={`btn-save-primary ${exportModal.type === 'excel' ? 'btn-excel-save' : ''}`}
+                  disabled={!exportModal.fileName.trim()}
+                >
+                  <Download size={15} /> Save & Download
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
